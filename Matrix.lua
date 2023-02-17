@@ -1,4 +1,6 @@
--- Arbitrary n x m Matrix implementation
+-- @name Matrix.lua
+-- @auth Joshua O'Leary (brogrammer)
+-- @purpose: Arbitrarily-sized Matrices for doing maths with.
 
 local Matrix = {};
 Matrix.__index;
@@ -22,6 +24,24 @@ function Matrix.empty(width, height)
 	self.Width = width;
 	self.Height = height;
 	return self;
+end
+
+function Matrix.identity(width, height)
+	local self = Matrix.new();
+	for row = 1, width do
+		self.Elements[row] = {};
+		for col = 1, height do
+			self.Elements[row][col] = 0.0;
+			if row == col then
+				-- Diagonal Entries
+				self.Elements[row][col] = 1.0;
+			end
+		end
+	end
+end
+
+function Matrix:isSquare()
+	return self.Width == self.Height;
 end
 
 function Matrix.scalarMult(mat, scalar)
@@ -51,22 +71,47 @@ function Matrix.matrixMult(mat1, mat2)
 	return newMat;
 end
 
+function Matrix.scalarDiv(mat, scalar)
+
+	local new = Matrix.empty(mat.Width, mat.Height);
+	for x = 1, mat.Width do
+		for y = 1, mat.Height do
+			new.Elements[x][y] = mat.Elements[x][y] / scalar;
+		end
+	end
+	return new;
+end
+
+function Matrix.matrixDiv(mat1, mat2)
+	local width = mat1.Width;
+	local height = mat2.Height;
+	local newMat = Matrix.empty(width, height);
+	for i = 1, width do
+		for j = 1, height do
+			local newIndex = 0;
+			for k = 1, mat1.Height do
+				newIndex = newIndex + mat1.Elements[i][k]/mat2.Elements[k][j];
+			end
+			newMat.Elements[i][j] = newIndex;
+		end
+	end
+	return newMat;
+end
+
 function Matrix.__mul(mat, unknown)
 	if type(unknown)=="number" then
 		return Matrix.scalarMult(mat, unknown);
 	else
 		return Matrix.matrixMult(mat, unknown);
 	end
-	
 end
 
 function Matrix.__div(mat, unknown)
 	if type(unknown)=="number" then
-		
+		return Matrix.scalarDiv(mat, unknown);		
 	else
-
+		return Matrix.matrixDiv(mat, unknown);
 	end
-	local new = Matrix.empty(mat.Width, mat.Height);
 end
 
 function Matrix.__add(m1, m2)
@@ -94,9 +139,22 @@ function Matrix.__sub(m1, m2)
 	return new;
 end
 
+function Matrix:determinant()
+	if not self:isSquare() then
+		error("Cannot compute determinant of a non-square matrix");
+	end
 
+
+end
+
+function Matrix:inverse()
+
+end
+
+function Matrix:transform()
+
+end
 
 
 
 return Matrix;
-
